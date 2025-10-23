@@ -1,12 +1,8 @@
-streamlit>=1.15.0
-pandas
+keras
+streamlit
+streamlit-webrtc
 numpy
-torch
-torchvision
 opencv-python-headless
 Pillow
-matplotlib
-scikit-learn
-nltk
-requests
-tqdm
+tensorflow==2.12
+gtts==2.4.0
