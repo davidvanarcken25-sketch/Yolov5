@@ -1,3 +1,5 @@
 streamlit>=1.15.0
-
-
+pandas
+scikit-learn
+nltk
+opencv-python-headless
