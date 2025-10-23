@@ -1,8 +1,7 @@
-keras
 streamlit
-streamlit-webrtc
-numpy
-opencv-python-headless
-Pillow
-tensorflow==2.12
-gtts==2.4.0
+bokeh
+streamlit-bokeh-events
+paho-mqtt
+pillow
+gtts
+googletrans==4.0.0rc1
