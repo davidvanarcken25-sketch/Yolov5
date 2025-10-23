@@ -1,5 +1,12 @@
 streamlit>=1.15.0
 pandas
+numpy
+torch
+torchvision
+opencv-python-headless
+Pillow
+matplotlib
 scikit-learn
 nltk
-opencv-python-headless
+requests
+tqdm
