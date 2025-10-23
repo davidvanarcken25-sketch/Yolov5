@@ -4,62 +4,56 @@ import numpy as np
 import cv2
 from PIL import Image
 
-# -----------------------------
-# CONFIGURACIÓN DE LA PÁGINA
-# -----------------------------
-st.set_page_config(page_title="Detección de Objetos con YOLOv5", page_icon="🔍", layout="wide")
+# Configuración general
+st.set_page_config(page_title="Detección de Objetos YOLOv5", page_icon="🔍", layout="wide")
 
 st.title("🔍 Detección de Objetos en Imágenes")
-st.write("Esta aplicación utiliza **YOLOv5** para detectar objetos en imágenes que subas o captures con tu cámara.")
+st.write("""
+Esta aplicación usa **YOLOv5** para detectar objetos en imágenes.  
+Sube una imagen o usa tu cámara para probarlo.
+""")
 
-# -----------------------------
-# CARGA DEL MODELO YOLOv5
-# -----------------------------
+# Cargar modelo (desde torch.hub)
 @st.cache_resource
 def load_model():
     try:
-        model = torch.hub.load('ultralytics/yolov5', 'yolov5s', pretrained=True)
+        model = torch.hub.load("ultralytics/yolov5", "yolov5s", pretrained=True)
         return model
     except Exception as e:
-        st.error(f"Error al cargar el modelo: {e}")
+        st.error(f"❌ Error al cargar el modelo: {e}")
         return None
 
 model = load_model()
 
-# -----------------------------
-# SUBIR O CAPTURAR IMAGEN
-# -----------------------------
-opcion = st.radio("Selecciona una fuente de imagen:", ["📁 Subir imagen", "📷 Capturar con cámara"])
+# Subir o capturar imagen
+opcion = st.radio("Selecciona la fuente de la imagen:", ["📁 Subir imagen", "📷 Capturar con cámara"])
 
 if opcion == "📁 Subir imagen":
-    uploaded_file = st.file_uploader("Sube una imagen", type=["jpg", "jpeg", "png"])
-    if uploaded_file:
-        image = Image.open(uploaded_file)
+    archivo = st.file_uploader("Sube una imagen (jpg, jpeg, png)", type=["jpg", "jpeg", "png"])
+    if archivo:
+        imagen = Image.open(archivo)
 elif opcion == "📷 Capturar con cámara":
-    captured_image = st.camera_input("Toma una foto")
-    if captured_image:
-        image = Image.open(captured_image)
+    captura = st.camera_input("Toma una foto")
+    if captura:
+        imagen = Image.open(captura)
 else:
-    image = None
+    imagen = None
 
-# -----------------------------
-# PROCESAMIENTO DE LA IMAGEN
-# -----------------------------
-if model and 'image' in locals() and image:
-    st.image(image, caption="Imagen original", use_container_width=True)
-    st.write("Detectando objetos...")
+# Procesar la imagen
+if model and "imagen" in locals() and imagen:
+    st.image(imagen, caption="Imagen original", use_container_width=True)
+    st.write("Analizando imagen... 🔄")
 
-    # Convertir imagen a formato compatible
-    img_array = np.array(image)
-    results = model(img_array)
+    img_array = np.array(imagen)
+    resultados = model(img_array)
 
-    # Mostrar resultados
-    st.image(np.squeeze(results.render()), caption="Resultado de detección", use_container_width=True)
+    # Mostrar resultado
+    st.image(np.squeeze(resultados.render()), caption="Resultado de detección", use_container_width=True)
 
-    # Mostrar etiquetas y confianza
+    # Mostrar etiquetas
     st.subheader("Resultados detectados:")
-    for *box, conf, cls in results.xyxy[0]:
+    for *box, conf, cls in resultados.xyxy[0]:
         st.write(f"🟢 {model.names[int(cls)]} — Confianza: {conf:.2f}")
 
 elif not model:
-    st.warning("⚠️ No se pudo cargar el modelo. Verifica tu conexión a internet.")
+    st.warning("⚠️ No se pudo cargar el modelo. Verifica tu conexión a Internet.")
