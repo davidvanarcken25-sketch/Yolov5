@@ -5,3 +5,8 @@ paho-mqtt
 pillow
 gtts
 googletrans==4.0.0rc1
+torch==1.12.0
+torchvision==0.13.0
+yolov5==7.0.9
+opencv-python
+numpy
