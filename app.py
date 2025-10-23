@@ -1,23 +1,19 @@
 import streamlit as st
-import torch
+from ultralytics import YOLO
+from PIL import Image
 import numpy as np
 import cv2
-from PIL import Image
 
-# Configuración general
-st.set_page_config(page_title="Detección de Objetos YOLOv5", page_icon="🔍", layout="wide")
-
+# --- Título y descripción ---
+st.set_page_config(page_title="Detección de Objetos", layout="wide")
 st.title("🔍 Detección de Objetos en Imágenes")
-st.write("""
-Esta aplicación usa **YOLOv5** para detectar objetos en imágenes.  
-Sube una imagen o usa tu cámara para probarlo.
-""")
+st.write("Esta aplicación usa **YOLOv8** para detectar objetos. Sube una imagen o usa tu cámara para probarlo.")
 
-# Cargar modelo (desde torch.hub)
+# --- Carga del modelo ---
 @st.cache_resource
 def load_model():
     try:
-        model = torch.hub.load("ultralytics/yolov5", "yolov5s", pretrained=True)
+        model = YOLO("yolov8n.pt")  # modelo liviano preentrenado
         return model
     except Exception as e:
         st.error(f"❌ Error al cargar el modelo: {e}")
@@ -25,35 +21,28 @@ def load_model():
 
 model = load_model()
 
-# Subir o capturar imagen
-opcion = st.radio("Selecciona la fuente de la imagen:", ["📁 Subir imagen", "📷 Capturar con cámara"])
+# --- Fuente de la imagen ---
+option = st.radio("Selecciona la fuente de la imagen:", ("Subir imagen", "Capturar con cámara"))
 
-if opcion == "📁 Subir imagen":
-    archivo = st.file_uploader("Sube una imagen (jpg, jpeg, png)", type=["jpg", "jpeg", "png"])
-    if archivo:
-        imagen = Image.open(archivo)
-elif opcion == "📷 Capturar con cámara":
-    captura = st.camera_input("Toma una foto")
-    if captura:
-        imagen = Image.open(captura)
+img = None
+if option == "Subir imagen":
+    uploaded_file = st.file_uploader("Sube una imagen (jpg, jpeg, png)", type=["jpg", "jpeg", "png"])
+    if uploaded_file:
+        img = Image.open(uploaded_file)
+elif option == "Capturar con cámara":
+    camera_file = st.camera_input("Captura una imagen")
+    if camera_file:
+        img = Image.open(camera_file)
+
+# --- Detección ---
+if img is not None and model:
+    st.image(img, caption="Imagen Original", use_container_width=True)
+
+    with st.spinner("Detectando objetos..."):
+        results = model.predict(np.array(img))
+        annotated_img = results[0].plot()  # dibuja las cajas
+        st.image(annotated_img, caption="Resultado de Detección", use_container_width=True)
+
+    st.success("✅ Detección completada con éxito.")
 else:
-    imagen = None
-
-# Procesar la imagen
-if model and "imagen" in locals() and imagen:
-    st.image(imagen, caption="Imagen original", use_container_width=True)
-    st.write("Analizando imagen... 🔄")
-
-    img_array = np.array(imagen)
-    resultados = model(img_array)
-
-    # Mostrar resultado
-    st.image(np.squeeze(resultados.render()), caption="Resultado de detección", use_container_width=True)
-
-    # Mostrar etiquetas
-    st.subheader("Resultados detectados:")
-    for *box, conf, cls in resultados.xyxy[0]:
-        st.write(f"🟢 {model.names[int(cls)]} — Confianza: {conf:.2f}")
-
-elif not model:
-    st.warning("⚠️ No se pudo cargar el modelo. Verifica tu conexión a Internet.")
+    st.info("Sube o captura una imagen para comenzar.")
