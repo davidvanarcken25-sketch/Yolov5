@@ -1,11 +1,6 @@
 streamlit
-bokeh
-streamlit-bokeh-events
-paho-mqtt
 pillow
-gtts
-googletrans==4.0.0rc1
-torch==1.12.0
-torchvision==0.13.0
-opencv-python
+torch
+torchvision
+opencv-python-headless
 numpy
